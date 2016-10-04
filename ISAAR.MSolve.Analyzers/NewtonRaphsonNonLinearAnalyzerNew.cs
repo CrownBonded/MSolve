@@ -165,6 +165,7 @@ namespace ISAAR.MSolve.Analyzers
 
                 }
                 this.SaveMaterialStateAndUpdateSolution();
+                Console.WriteLine(this.displacementMap[1][1]);
             }
             this.copySolutionToSubdomains();
         }
@@ -200,6 +201,7 @@ namespace ISAAR.MSolve.Analyzers
                 Vector<double> subdomainRightHandSide = subdomain.RHS as Vector<double>;
                 Vector<double> rightHandSide = this.rightHandSides[id];
                 subdomainRightHandSide.Clear();
+                subdomainRightHandSide.Add(rightHandSide);
                 subdomainRightHandSide.Multiply(this.loadFactor);
                 subdomainRightHandSide.Subtract(internalRightHandSide);
                 subdomain.SubdomainToGlobalVector(subdomainRightHandSide.Data, this.globalRightHandSide.Data);

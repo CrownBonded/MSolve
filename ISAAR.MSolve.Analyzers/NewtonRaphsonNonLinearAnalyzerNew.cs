@@ -8,6 +8,7 @@ using System.Text;
 using ISAAR.MSolve.Logging.Interfaces;
 using ISAAR.MSolve.Matrices.Interfaces;
 using ISAAR.MSolve.Logging;
+using System.Diagnostics;
 
 namespace ISAAR.MSolve.Analyzers
 {
@@ -221,7 +222,7 @@ namespace ISAAR.MSolve.Analyzers
 
                 for (int step = 0; step < MAX_ITERATIOMS; step++)
                 {
-                
+                                  
                     this.solver.Solve();
                     double errorNorm = this.CalculateInternalRightHandSideNorm() / (this.incrementalLoadFactor * this.rightHandSideNorm);
 
@@ -231,13 +232,16 @@ namespace ISAAR.MSolve.Analyzers
                     }
                     if (Math.Abs(errorNorm) < this.Tolerance)
                     {
-                    break;
+                        break;
                     }
+                    Debug.WriteLine("NR {0}, iteration: {1}, error: {2}", increment, step, errorNorm);
 
                     this.SplitResidualForcesToSubdomains();
                     if (((step + 1) % this.StepForMatrixRebuild) == 0)
                     {
+                        provider.Reset();
                         this.BuildMatrices();
+                        this.solver.Initialize();
                     }
 
                 }
@@ -338,7 +342,7 @@ namespace ISAAR.MSolve.Analyzers
                 subdomain.SubdomainToGlobalVector((subdomain.RHS as Vector<double>).Data, this.globalRightHandSide.Data);
             }
 
-                this.rightHandSideNorm = this.provider.RHSNorm(this.globalRightHandSide.Data);
+            this.rightHandSideNorm = this.provider.RHSNorm(this.globalRightHandSide.Data);
         }
 
 
@@ -368,6 +372,7 @@ namespace ISAAR.MSolve.Analyzers
 
         private void UpdateRightHandSide()
         {
+            this.globalRightHandSide.Clear();
             foreach (var subdomain in this.subdomains.Values)
             {
                 int id = subdomain.ID;
